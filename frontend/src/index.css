@@ -1,1 +1,15 @@
+/* Google Font */
+@import url("https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap");
+
+/* TailwindCSS */
 @import "tailwindcss";
+
+/* Áp dụng Poppins cho toàn bộ ứng dụng */
+* {
+  font-family: "Poppins", sans-serif;
+}
+
+/* Ẩn scrollbar */
+::-webkit-scrollbar {
+  display: none;
+}
