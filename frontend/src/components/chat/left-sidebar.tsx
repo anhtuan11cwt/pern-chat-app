@@ -4,6 +4,7 @@ import { IoChatbubbles, IoSearch } from "react-icons/io5";
 import { useNavigate } from "react-router-dom";
 import { useUsers } from "@/customHooks/useUsers";
 import { authClient } from "@/lib/auth-client";
+import API from "@/lib/axios";
 import type { User } from "@/lib/types";
 import { useChatStore } from "@/store/use-chat-store";
 import { useEditProfileStore } from "@/store/use-edit-profile-store";
@@ -15,20 +16,32 @@ const MOCK_ONLINE = new Set(["1", "3", "5"]);
 const LeftSidebar = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [dropdownOpen, setDropdownOpen] = useState(false);
-  const { selectedUser, setSelectedUser, setActiveConversation } =
-    useChatStore();
+  const {
+    selectedUser,
+    setSelectedUser,
+    setActiveConversation,
+    isConversationLoading,
+    setConversationLoading,
+  } = useChatStore();
   const { open } = useEditProfileStore();
   const navigate = useNavigate();
 
   const { users, loading } = useUsers(searchQuery);
 
-  const handleStartConversation = (user: User) => {
-    setSelectedUser(user);
-    setActiveConversation({
-      createdAt: new Date().toISOString(),
-      id: `conv-${user.id}`,
-      participants: ["me", user.id],
-    });
+  const handleStartConversation = async (user: User) => {
+    if (isConversationLoading) return;
+    if (selectedUser?.id === user.id) return;
+
+    setConversationLoading(true);
+    try {
+      const res = await API.post(`/conversations/${user.id}`);
+      setSelectedUser(user);
+      setActiveConversation(res.data);
+    } catch (err) {
+      console.error("Start conversation error:", err);
+    } finally {
+      setConversationLoading(false);
+    }
   };
 
   const handleSignOut = async () => {

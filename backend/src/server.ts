@@ -4,6 +4,7 @@ import cors from "cors";
 import { config } from "dotenv";
 import express, { type Request, type Response } from "express";
 import { auth } from "./lib/auth";
+import conversationRoutes from "./routes/conversation.routes";
 import profileRoutes from "./routes/profile.routes";
 import userRoutes from "./routes/user.routes";
 import { initSocket } from "./sockets";
@@ -23,6 +24,7 @@ app.use(
 
 app.use(express.json());
 
+app.use("/api/conversations", conversationRoutes);
 app.use("/api/profile", profileRoutes);
 app.use("/api/users", userRoutes);
 

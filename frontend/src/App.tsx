@@ -12,7 +12,7 @@ function App() {
 
   return (
     <div
-      className="min-h-screen bg-cover bg-no-repeat bg-center bg-fixed"
+      className="bg-cover bg-no-repeat bg-center bg-fixed min-h-screen"
       style={{
         backgroundColor: "#0f0a1a",
         backgroundImage: `url(${background})`,
