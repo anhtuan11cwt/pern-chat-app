@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
+import toast from "react-hot-toast";
 import { IoClose } from "react-icons/io5";
 import AvatarUpload from "@/components/ui/avatar-upload";
+import API from "@/lib/axios";
 import { inputStyles } from "@/lib/constants";
 import { useEditProfileStore } from "@/store/use-edit-profile-store";
 
@@ -10,28 +12,50 @@ const EditProfileModal = () => {
   const [name, setName] = useState("");
   const [bio, setBio] = useState("");
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
+  const [avatarFile, setAvatarFile] = useState<File | null>(null);
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     if (!isOpen) return;
     const fetchProfile = async () => {
-      // TODO: Replace with real API call
-      setName("John Doe");
-      setBio("Xin chào! Mình đang sử dụng ChatApp.");
-      setAvatarPreview(null);
+      try {
+        const { data } = await API.get("/profile");
+        setName(data.name || "");
+        setBio(data.bio || "");
+        setAvatarPreview(data.avatar || null);
+      } catch (error) {
+        console.error("Fetch profile error:", error);
+      }
     };
     fetchProfile();
   }, [isOpen]);
 
-  const handleProfileSetup = async (e: React.FormEvent) => {
+  const handleProfileSave = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
 
-    // TODO: Replace with real API call
-    await new Promise((resolve) => setTimeout(resolve, 1000));
+    try {
+      const formData = new FormData();
 
-    setLoading(false);
-    close();
+      if (name) formData.append("name", name);
+      if (bio.trim()) formData.append("bio", bio);
+      if (avatarFile) formData.append("avatar", avatarFile);
+
+      await API.put("/profile", formData);
+      // FormData tự set Content-Type: multipart/form-data
+
+      toast("Profile updated successfully!", {
+        style: { background: "#1a1a2e", color: "white" },
+      });
+      close();
+    } catch (error) {
+      console.error("Profile update error:", error);
+      toast("Failed to update profile", {
+        style: { background: "#1a1a2e", color: "white" },
+      });
+    } finally {
+      setLoading(false);
+    }
   };
 
   if (!isOpen) return null;
@@ -66,11 +90,12 @@ const EditProfileModal = () => {
         </div>
 
         {/* Form */}
-        <form className="space-y-5" onSubmit={handleProfileSetup}>
+        <form className="space-y-5" onSubmit={handleProfileSave}>
           {/* Avatar Upload */}
           <div className="flex justify-center">
             <AvatarUpload
-              onFileSelect={(_file: File, previewUrl: string) => {
+              onFileSelect={(file: File, previewUrl: string) => {
+                setAvatarFile(file);
                 setAvatarPreview(previewUrl);
               }}
               preview={avatarPreview}

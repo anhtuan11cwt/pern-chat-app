@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
 import { IoChatbubbles } from "react-icons/io5";
 import { useNavigate } from "react-router-dom";
@@ -12,7 +12,9 @@ const LoginPage = () => {
   const navigate = useNavigate();
 
   const { data: session } = authClient.useSession();
-  if (session) navigate("/chat");
+  useEffect(() => {
+    if (session) navigate("/chat");
+  }, [session, navigate]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
