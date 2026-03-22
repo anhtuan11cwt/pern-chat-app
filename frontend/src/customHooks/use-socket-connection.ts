@@ -33,7 +33,7 @@ export function useSocketConnection() {
     const handleReconnect = () => {
       const activeConversation = useChatStore.getState().activeConversation;
       if (activeConversation) {
-        socket.emit("conversationJoin", activeConversation.id);
+        socket.emit("conversation:join", activeConversation.id);
       }
     };
 

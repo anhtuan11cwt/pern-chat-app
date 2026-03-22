@@ -36,12 +36,12 @@ export function initSocket(server: HTTPServer) {
 
       io.emit("onlineUsers", Array.from(onlineUsers.keys()));
 
-      socket.on("conversationJoin", (conversationId: string) => {
+      socket.on("conversation:join", (conversationId: string) => {
         socket.join(conversationId);
         console.log(`Người dùng đã tham gia phòng: ${conversationId}`);
       });
 
-      socket.on("conversationLeave", (conversationId: string) => {
+      socket.on("conversation:leave", (conversationId: string) => {
         socket.leave(conversationId);
         console.log(`Người dùng đã rời phòng: ${conversationId}`);
       });

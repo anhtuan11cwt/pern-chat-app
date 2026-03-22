@@ -1,6 +1,7 @@
 import type { Request, Response } from "express";
 import prisma from "../lib/prisma";
 import { getServerSession } from "../services/getSession.service";
+import { io } from "../sockets";
 
 export const createMessage = async (req: Request, res: Response) => {
   try {
@@ -44,11 +45,11 @@ export const createMessage = async (req: Request, res: Response) => {
       },
     });
 
-    // TODO: Emit Socket (realtime) — Bước 19
+    io.to(conversationId).emit("message:new", message);
 
     res.status(201).json(message);
   } catch (err) {
-    console.error("Create message error:", err);
+    console.error("Lỗi tạo tin nhắn:", err);
     res.status(500).json({ message: "Lỗi máy chủ" });
   }
 };
@@ -90,7 +91,7 @@ export const getMessages = async (req: Request, res: Response) => {
 
     res.json({ messages });
   } catch (err) {
-    console.error("Get messages error:", err);
+    console.error("Lỗi lấy danh sách tin nhắn:", err);
     res.status(500).json({ message: "Lỗi máy chủ" });
   }
 };
