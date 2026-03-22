@@ -1,11 +1,16 @@
-import "./App.css";
+import { Route, Routes } from "react-router-dom";
+import ChatPage from "./pages/ChatPage";
+import LoginPage from "./pages/LoginPage";
+import RegisterPage from "./pages/RegisterPage";
 
 function App() {
   return (
     <div>
-      <h1 className="font-bold text-3xl underline text-red-700">
-        Hello world!
-      </h1>
+      <Routes>
+        <Route element={<LoginPage />} path="/" />
+        <Route element={<RegisterPage />} path="/register" />
+        <Route element={<ChatPage />} path="/chat" />
+      </Routes>
     </div>
   );
 }
