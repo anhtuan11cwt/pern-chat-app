@@ -44,13 +44,13 @@ const EditProfileModal = () => {
       await API.put("/profile", formData);
       // FormData tự set Content-Type: multipart/form-data
 
-      toast("Profile updated successfully!", {
+      toast("Cập nhật hồ sơ thành công!", {
         style: { background: "#1a1a2e", color: "white" },
       });
       close();
     } catch (error) {
       console.error("Profile update error:", error);
-      toast("Failed to update profile", {
+      toast("Cập nhật hồ sơ thất bại", {
         style: { background: "#1a1a2e", color: "white" },
       });
     } finally {
