@@ -5,6 +5,7 @@ import { config } from "dotenv";
 import express, { type Request, type Response } from "express";
 import { auth } from "./lib/auth";
 import profileRoutes from "./routes/profile.routes";
+import userRoutes from "./routes/user.routes";
 
 config();
 
@@ -22,6 +23,7 @@ app.use(
 app.use(express.json());
 
 app.use("/api/profile", profileRoutes);
+app.use("/api/users", userRoutes);
 
 app.all("/api/auth/{*splat}", toNodeHandler(auth));
 

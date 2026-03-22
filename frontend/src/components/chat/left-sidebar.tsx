@@ -2,54 +2,13 @@ import { useState } from "react";
 import { BsThreeDotsVertical } from "react-icons/bs";
 import { IoChatbubbles, IoSearch } from "react-icons/io5";
 import { useNavigate } from "react-router-dom";
-import image1 from "@/assets/image1.jpg";
-import image2 from "@/assets/image2.jpg";
-import image3 from "@/assets/image3.jpg";
-import image4 from "@/assets/image4.jpg";
-import image5 from "@/assets/image5.jpg";
+import { useUsers } from "@/customHooks/useUsers";
 import { authClient } from "@/lib/auth-client";
 import type { User } from "@/lib/types";
 import { useChatStore } from "@/store/use-chat-store";
 import { useEditProfileStore } from "@/store/use-edit-profile-store";
 import ChatUser from "./chat-user";
-
-const MOCK_USERS: User[] = [
-  {
-    avatar: image1,
-    bio: "Nhà thiết kế & người yêu cà phê",
-    email: "alice@test.com",
-    id: "1",
-    name: "Alice Nguyen",
-  },
-  {
-    avatar: image2,
-    bio: "Lập trình viên Full-stack",
-    email: "bob@test.com",
-    id: "2",
-    name: "Bob Tran",
-  },
-  {
-    avatar: image3,
-    bio: "Quản lý sản phẩm",
-    email: "charlie@test.com",
-    id: "3",
-    name: "Charlie Le",
-  },
-  {
-    avatar: image4,
-    bio: "Nhà nghiên cứu UX",
-    email: "diana@test.com",
-    id: "4",
-    name: "Diana Pham",
-  },
-  {
-    avatar: image5,
-    bio: "Lập trình viên Mobile",
-    email: "eric@test.com",
-    id: "5",
-    name: "Eric Vo",
-  },
-];
+import LoadingUsers from "./loading-users";
 
 const MOCK_ONLINE = new Set(["1", "3", "5"]);
 
@@ -61,9 +20,7 @@ const LeftSidebar = () => {
   const { open } = useEditProfileStore();
   const navigate = useNavigate();
 
-  const filteredUsers = MOCK_USERS.filter((u) =>
-    u.name.toLowerCase().includes(searchQuery.toLowerCase()),
-  );
+  const { users, loading } = useUsers(searchQuery);
 
   const handleStartConversation = (user: User) => {
     setSelectedUser(user);
@@ -153,11 +110,9 @@ const LeftSidebar = () => {
 
       {/* User List */}
       <div className="flex-1 overflow-y-auto px-2 py-2">
-        {/* Loading skeleton */}
-        {/* {loading && <LoadingUsers />} */}
+        {loading && <LoadingUsers />}
 
-        {/* Empty state */}
-        {filteredUsers.length === 0 && (
+        {!loading && users.length === 0 && (
           <div className="flex flex-col items-center justify-center mt-16 text-center px-4">
             <IoSearch className="text-gray-500 mb-2" size={28} />
             <p className="text-sm font-medium text-gray-300">
@@ -169,22 +124,23 @@ const LeftSidebar = () => {
           </div>
         )}
 
-        {/* User list */}
-        {filteredUsers.map((user) => {
-          const online = MOCK_ONLINE.has(user.id);
-          const isActive = user.id === selectedUser?.id;
+        {!loading &&
+          users.length > 0 &&
+          users.map((user) => {
+            const onlineSet = new Set(MOCK_ONLINE);
+            const isOnline = onlineSet.has(user.id);
 
-          return (
-            <ChatUser
-              avatar={user.avatar}
-              key={user.id}
-              name={user.name}
-              onClick={() => handleStartConversation(user)}
-              online={online}
-              selected={isActive}
-            />
-          );
-        })}
+            return (
+              <ChatUser
+                avatar={user.avatar}
+                key={user.id}
+                name={user.name}
+                onClick={() => handleStartConversation(user)}
+                online={isOnline}
+                selected={user.id === selectedUser?.id}
+              />
+            );
+          })}
       </div>
     </div>
   );
