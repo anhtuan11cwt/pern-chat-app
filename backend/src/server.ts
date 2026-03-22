@@ -6,6 +6,7 @@ import express, { type Request, type Response } from "express";
 import { auth } from "./lib/auth";
 import profileRoutes from "./routes/profile.routes";
 import userRoutes from "./routes/user.routes";
+import { initSocket } from "./sockets";
 
 config();
 
@@ -32,6 +33,7 @@ app.get("/", (_req: Request, res: Response) => {
 });
 
 const httpServer = createServer(app);
+initSocket(httpServer);
 
 httpServer.listen(PORT, () => {
   console.log(`Máy chủ đang chạy trên cổng ${PORT}`);
