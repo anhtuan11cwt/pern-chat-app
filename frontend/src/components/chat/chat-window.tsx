@@ -1,80 +1,68 @@
 import { useEffect, useRef } from "react";
-import image1 from "@/assets/image1.jpg";
 import { assets } from "@/lib/assets";
-import type { Message } from "@/lib/types";
+import { authClient } from "@/lib/auth-client";
+import API from "@/lib/axios";
 import { useChatStore } from "@/store/use-chat-store";
 
-const MOCK_MESSAGES: Message[] = [
-  {
-    content: "Chào bạn! Bạn khoẻ không?",
-    conversationId: "conv-1",
-    createdAt: new Date(Date.now() - 3600000).toISOString(),
-    id: "m1",
-    sender: {
-      avatar: image1,
-      email: "alice@test.com",
-      id: "1",
-      name: "Alice Nguyen",
-    },
-  },
-  {
-    content:
-      "Mình rất khoẻ! Vừa hoàn thành tính năng mới. Bạn nghĩ sao về thiết kế glass morphism?",
-    conversationId: "conv-1",
-    createdAt: new Date(Date.now() - 3500000).toISOString(),
-    id: "m2",
-    sender: { email: "me@test.com", id: "me", name: "Tôi" },
-  },
-  {
-    content:
-      "Trông tuyệt lắm! Hiệu ứng mờ rất mượt. Mình cũng thích theme màu tím đậm.",
-    conversationId: "conv-1",
-    createdAt: new Date(Date.now() - 3400000).toISOString(),
-    id: "m3",
-    sender: {
-      avatar: image1,
-      email: "alice@test.com",
-      id: "1",
-      name: "Alice Nguyen",
-    },
-  },
-  {
-    content:
-      "Cảm ơn nhé! Mình đã dành nhiều thời gian cho responsive layout. Hoạt động tốt trên điện thoại, máy tính bảng và máy tính bàn.",
-    conversationId: "conv-1",
-    createdAt: new Date(Date.now() - 3300000).toISOString(),
-    id: "m4",
-    sender: { email: "me@test.com", id: "me", name: "Tôi" },
-  },
-  {
-    content:
-      "Bạn có thể cho mình xem code không? Mình muốn học cách bạn làm grid layout.",
-    conversationId: "conv-1",
-    createdAt: new Date(Date.now() - 3200000).toISOString(),
-    id: "m5",
-    sender: {
-      avatar: image1,
-      email: "alice@test.com",
-      id: "1",
-      name: "Alice Nguyen",
-    },
-  },
-];
+const LoadingScreen = () => {
+  return (
+    <div className="flex-1 flex items-center justify-center">
+      <div className="flex flex-col items-center gap-3">
+        <div className="w-10 h-10 border-4 border-violet-500 border-t-transparent rounded-full animate-spin" />
+        <p className="text-gray-400 text-sm">Đang tải...</p>
+      </div>
+    </div>
+  );
+};
+
+const EmptyChat = () => {
+  return (
+    <div className="flex-1 flex items-center justify-center">
+      <p className="text-gray-500 text-sm">Chưa có tin nhắn nào</p>
+    </div>
+  );
+};
 
 const ChatWindow = () => {
-  const { messages, isMessagesLoading } = useChatStore();
-  const scrollRef = useRef<HTMLDivElement>(null);
+  const scrollToBottomRef = useRef<HTMLDivElement | null>(null);
+  const {
+    messages,
+    isMessagesLoading,
+    setMessages,
+    setMessagesLoading,
+    activeConversation,
+  } = useChatStore();
+  const { data: session } = authClient.useSession();
 
-  const displayMessages = messages.length > 0 ? messages : MOCK_MESSAGES;
-
+  // Fetch messages when activeConversation changes
   useEffect(() => {
-    scrollRef.current?.scrollIntoView({ behavior: "smooth" });
-  });
+    if (!activeConversation) return;
 
-  if (isMessagesLoading) {
+    const fetchMessages = async () => {
+      setMessagesLoading(true);
+      setMessages([]);
+      try {
+        const response = await API.get(`/messages/${activeConversation.id}`);
+        setMessages(response.data.messages);
+      } catch (error) {
+        console.error(error);
+      } finally {
+        setMessagesLoading(false);
+      }
+    };
+
+    fetchMessages();
+  }, [activeConversation, setMessages, setMessagesLoading]);
+
+  // Auto-scroll when new messages arrive
+  useEffect(() => {
+    scrollToBottomRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, []);
+
+  if (!activeConversation) {
     return (
-      <div className="flex-1 flex items-center justify-center">
-        <div className="w-8 h-8 border-4 border-violet-500 border-t-transparent rounded-full animate-spin" />
+      <div className="flex-1 flex items-center justify-center text-gray-500">
+        Chọn một cuộc trò chuyện...
       </div>
     );
   }
@@ -84,59 +72,48 @@ const ChatWindow = () => {
       className="flex flex-col overflow-y-auto px-4 py-3 gap-1"
       style={{ height: "calc(100% - 120px)" }}
     >
-      {displayMessages.map((message) => {
-        const isMe = message.sender.id === "me";
-        const time = new Date(message.createdAt).toLocaleTimeString([], {
-          hour: "2-digit",
-          hour12: false,
-          minute: "2-digit",
-        });
+      {isMessagesLoading && <LoadingScreen />}
 
-        return (
-          <div
-            className={`flex items-end gap-2 mb-3 ${isMe ? "justify-end" : "justify-start"}`}
-            key={message.id}
-          >
-            {/* Avatar + timestamp for received messages */}
-            {!isMe && (
+      {!isMessagesLoading && messages.length === 0 && <EmptyChat />}
+
+      {!isMessagesLoading &&
+        messages.map((message) => {
+          const isMe = message.sender.id === session?.user?.id;
+
+          return (
+            <div
+              className={`flex items-end gap-2 mb-3 ${isMe ? "justify-end" : "flex-row-reverse"}`}
+              key={message.id}
+            >
+              <p
+                className={`max-w-[65%] px-4 py-2.5 text-sm leading-relaxed break-words text-white
+                  ${
+                    isMe
+                      ? "bg-violet-500/50 rounded-2xl rounded-br-none"
+                      : "bg-gray-700/50 rounded-2xl rounded-bl-none"
+                  }`}
+              >
+                {message.content}
+              </p>
               <div className="flex flex-col items-center shrink-0">
                 <img
                   alt={message.sender.name}
                   className="w-7 h-7 rounded-full object-cover"
                   src={message.sender.avatar || assets.avatar}
                 />
-                <span className="text-[10px] text-gray-500 mt-1">{time}</span>
+                <p className="text-[10px] text-gray-500 mt-1">
+                  {new Date(message.createdAt).toLocaleTimeString([], {
+                    hour: "2-digit",
+                    hour12: false,
+                    minute: "2-digit",
+                  })}
+                </p>
               </div>
-            )}
-
-            {/* Message bubble */}
-            <div
-              className={`max-w-[65%] px-4 py-2.5 text-sm leading-relaxed break-words
-                ${
-                  isMe
-                    ? "bg-violet-500/40 text-white rounded-2xl rounded-br-sm"
-                    : "bg-gray-700/40 text-gray-100 rounded-2xl rounded-bl-sm"
-                }`}
-            >
-              {message.content}
             </div>
+          );
+        })}
 
-            {/* Avatar + timestamp for sent messages */}
-            {isMe && (
-              <div className="flex flex-col items-center shrink-0">
-                <img
-                  alt="Tôi"
-                  className="w-7 h-7 rounded-full object-cover"
-                  src={assets.avatar}
-                />
-                <span className="text-[10px] text-gray-500 mt-1">{time}</span>
-              </div>
-            )}
-          </div>
-        );
-      })}
-
-      <div ref={scrollRef} />
+      <div ref={scrollToBottomRef} />
     </div>
   );
 };
