@@ -4,6 +4,7 @@ import cors from "cors";
 import { config } from "dotenv";
 import express, { type Request, type Response } from "express";
 import { auth } from "./lib/auth";
+import profileRoutes from "./routes/profile.routes";
 
 config();
 
@@ -19,6 +20,8 @@ app.use(
 );
 
 app.use(express.json());
+
+app.use("/api/profile", profileRoutes);
 
 app.all("/api/auth/{*splat}", toNodeHandler(auth));
 
