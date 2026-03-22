@@ -1,6 +1,8 @@
 import { useState } from "react";
+import toast from "react-hot-toast";
 import { IoChatbubbles } from "react-icons/io5";
 import { useNavigate } from "react-router-dom";
+import { authClient } from "@/lib/auth-client";
 import { inputStyles } from "@/lib/constants";
 
 const RegisterPage = () => {
@@ -17,11 +19,27 @@ const RegisterPage = () => {
     e.preventDefault();
     setLoading(true);
 
-    // TODO: Replace with real auth API
-    await new Promise((resolve) => setTimeout(resolve, 800));
+    try {
+      const { data: result, error } = await authClient.signUp.email({
+        email: data.email,
+        name: data.fullName,
+        password: data.password,
+      });
 
-    setLoading(false);
-    navigate("/chat");
+      if (error) {
+        toast.error(error.message as string);
+        return;
+      }
+
+      if (result) {
+        toast.success("Đăng ký thành công!");
+        navigate("/chat");
+      }
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (

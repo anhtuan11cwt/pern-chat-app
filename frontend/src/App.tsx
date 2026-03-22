@@ -1,3 +1,4 @@
+import { Toaster } from "react-hot-toast";
 import { Route, Routes } from "react-router-dom";
 import background from "./assets/background.png";
 import ProtectedRoute from "./components/layout/protected-route";
@@ -14,6 +15,7 @@ function App() {
         backgroundImage: `url(${background})`,
       }}
     >
+      <Toaster position="top-center" />
       <Routes>
         <Route element={<LoginPage />} path="/" />
         <Route element={<RegisterPage />} path="/register" />
