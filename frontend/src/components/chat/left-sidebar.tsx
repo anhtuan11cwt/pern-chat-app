@@ -2,6 +2,7 @@ import { useState } from "react";
 import { BsThreeDotsVertical } from "react-icons/bs";
 import { IoChatbubbles, IoSearch } from "react-icons/io5";
 import { useNavigate } from "react-router-dom";
+import { useSocketForOnlineUsers } from "@/customHooks/use-online-users";
 import { useUsers } from "@/customHooks/useUsers";
 import { authClient } from "@/lib/auth-client";
 import API from "@/lib/axios";
@@ -10,8 +11,6 @@ import { useChatStore } from "@/store/use-chat-store";
 import { useEditProfileStore } from "@/store/use-edit-profile-store";
 import ChatUser from "./chat-user";
 import LoadingUsers from "./loading-users";
-
-const MOCK_ONLINE = new Set(["1", "3", "5"]);
 
 const LeftSidebar = () => {
   const [searchQuery, setSearchQuery] = useState("");
@@ -25,6 +24,8 @@ const LeftSidebar = () => {
   } = useChatStore();
   const { open } = useEditProfileStore();
   const navigate = useNavigate();
+  const { data: session } = authClient.useSession();
+  const { onlineUsers } = useSocketForOnlineUsers(session?.user?.id);
 
   const { users, loading } = useUsers(searchQuery);
 
@@ -140,8 +141,7 @@ const LeftSidebar = () => {
         {!loading &&
           users.length > 0 &&
           users.map((user) => {
-            const onlineSet = new Set(MOCK_ONLINE);
-            const isOnline = onlineSet.has(user.id);
+            const isOnline = onlineUsers.includes(user.id);
 
             return (
               <ChatUser

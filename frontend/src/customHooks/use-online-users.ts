@@ -13,6 +13,7 @@ export function useSocketForOnlineUsers(userId?: string) {
     };
 
     socket.on("onlineUsers", handleOnlineUsers);
+    socket.emit("getOnlineUsers");
 
     return () => {
       socket.off("onlineUsers", handleOnlineUsers);

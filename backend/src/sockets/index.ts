@@ -36,6 +36,10 @@ export function initSocket(server: HTTPServer) {
 
       io.emit("onlineUsers", Array.from(onlineUsers.keys()));
 
+      socket.on("getOnlineUsers", () => {
+        socket.emit("onlineUsers", Array.from(onlineUsers.keys()));
+      });
+
       socket.on("conversation:join", (conversationId: string) => {
         socket.join(conversationId);
         console.log(`Người dùng đã tham gia phòng: ${conversationId}`);

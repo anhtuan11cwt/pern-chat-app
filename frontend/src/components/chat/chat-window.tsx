@@ -95,8 +95,12 @@ const ChatWindow = () => {
 
   // Tự động cuộn xuống khi có tin nhắn mới
   useEffect(() => {
-    scrollToBottomRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, []);
+    if (messages.length > 0) {
+      scrollToBottomRef.current?.scrollIntoView({
+        behavior: isMessagesLoading ? "auto" : "smooth",
+      });
+    }
+  }, [messages, isMessagesLoading]);
 
   if (!activeConversation) {
     return (

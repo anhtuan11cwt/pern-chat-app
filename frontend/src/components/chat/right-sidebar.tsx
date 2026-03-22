@@ -1,5 +1,6 @@
 import { IoLogOut } from "react-icons/io5";
 import { useNavigate } from "react-router-dom";
+import { useSocketForOnlineUsers } from "@/customHooks/use-online-users";
 import { assets } from "@/lib/assets";
 import { authClient } from "@/lib/auth-client";
 import { useChatStore } from "@/store/use-chat-store";
@@ -7,8 +8,12 @@ import { useChatStore } from "@/store/use-chat-store";
 const RightSidebar = () => {
   const { selectedUser } = useChatStore();
   const navigate = useNavigate();
+  const { data: session } = authClient.useSession();
+  const { onlineUsers } = useSocketForOnlineUsers(session?.user?.id);
 
   if (!selectedUser) return null;
+
+  const isOnline = onlineUsers.includes(selectedUser.id);
 
   const handleSignOut = async () => {
     try {
@@ -32,7 +37,9 @@ const RightSidebar = () => {
         />
 
         <div className="flex items-center gap-2">
-          <span className="w-3 h-3 rounded-full bg-green-500" />
+          <span
+            className={`w-3 h-3 rounded-full ${isOnline ? "bg-green-500" : "bg-zinc-500"}`}
+          />
           <p className="text-xl font-medium">{selectedUser.name}</p>
         </div>
 
