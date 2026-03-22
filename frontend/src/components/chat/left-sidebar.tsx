@@ -7,6 +7,7 @@ import image2 from "@/assets/image2.jpg";
 import image3 from "@/assets/image3.jpg";
 import image4 from "@/assets/image4.jpg";
 import image5 from "@/assets/image5.jpg";
+import { authClient } from "@/lib/auth-client";
 import type { User } from "@/lib/types";
 import { useChatStore } from "@/store/use-chat-store";
 import { useEditProfileStore } from "@/store/use-edit-profile-store";
@@ -73,8 +74,16 @@ const LeftSidebar = () => {
     });
   };
 
-  const handleSignOut = () => {
-    navigate("/");
+  const handleSignOut = async () => {
+    try {
+      await authClient.signOut();
+      useChatStore.getState().setSelectedUser(null);
+      useChatStore.getState().setActiveConversation(null);
+      useChatStore.getState().setMessages([]);
+      navigate("/");
+    } catch (error) {
+      console.error("[LeftSignOut] Error:", error);
+    }
   };
 
   return (

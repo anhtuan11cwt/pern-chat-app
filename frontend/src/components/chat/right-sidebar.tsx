@@ -1,6 +1,7 @@
 import { IoLogOut } from "react-icons/io5";
 import { useNavigate } from "react-router-dom";
 import { assets } from "@/lib/assets";
+import { authClient } from "@/lib/auth-client";
 import { useChatStore } from "@/store/use-chat-store";
 
 const RightSidebar = () => {
@@ -9,8 +10,16 @@ const RightSidebar = () => {
 
   if (!selectedUser) return null;
 
-  const handleSignOut = () => {
-    navigate("/");
+  const handleSignOut = async () => {
+    try {
+      await authClient.signOut();
+      useChatStore.getState().setSelectedUser(null);
+      useChatStore.getState().setActiveConversation(null);
+      useChatStore.getState().setMessages([]);
+      navigate("/");
+    } catch (error) {
+      console.error("[SignOut] Error:", error);
+    }
   };
 
   return (
