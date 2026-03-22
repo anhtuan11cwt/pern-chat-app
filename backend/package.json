@@ -1,0 +1,39 @@
+{
+  "author": "",
+  "dependencies": {
+    "express": "^5.2.1",
+    "jiti": "^2.6.1"
+  },
+  "description": "",
+  "devDependencies": {
+    "@biomejs/biome": "2.4.8",
+    "@eslint/js": "^10.0.1",
+    "@types/express": "^5.0.6",
+    "@types/node": "^25.5.0",
+    "concurrently": "^9.2.1",
+    "eslint": "^10.1.0",
+    "globals": "^17.4.0",
+    "nodemon": "^3.1.14",
+    "tsx": "^4.21.0",
+    "typescript": "^5.9.3",
+    "typescript-eslint": "^8.57.1"
+  },
+  "keywords": [],
+  "license": "ISC",
+  "main": "index.js",
+  "name": "backend",
+  "scripts": {
+    "build": "prisma generate && npm --prefix ../frontend run build && tsc",
+    "check": "biome check --write",
+    "check2": "biome check --write --unsafe",
+    "dev": "concurrently \"npm run dev-server\" \"npm --prefix ../frontend run dev\"",
+    "dev-server": "nodemon",
+    "format": "biome format --write",
+    "lint": "eslint .",
+    "lint2": "biome lint --write",
+    "start": "node dist/server.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "type": "commonjs",
+  "version": "1.0.0"
+}
